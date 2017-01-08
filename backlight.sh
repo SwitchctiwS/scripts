@@ -6,7 +6,6 @@
 #
 # Usage: backlight.sh [up|down|current]
 ##
-
 dir=/sys/class/backlight/intel_backlight/
 min_brightness=25
 max_brightness=$(<$dir/max_brightness)
@@ -28,7 +27,7 @@ fi
 scale=$((max_brightness / 20))
 
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-	echo 'Enter only ONE argument'
+	echo 'Enter ONE argument'
 	exit 1
 fi
 
@@ -45,12 +44,16 @@ elif [ $1 = 'down' ]; then
 		echo 'Monitor is at min brightness'
 	fi
 elif [ $1 = 'current' ]; then
-	echo $brightness
+	echo 'Min: '$min_brightness 
+	echo 'Max: '$max_brightness
+	echo 'Current: '$brightness
 else
 	echo 'Enter "up", "down", or "current"' 
 	exit 1
 fi
 
+
 echo $brightness > /sys/class/backlight/intel_backlight/brightness
 
 exit 0
+
