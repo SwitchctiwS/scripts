@@ -4,7 +4,7 @@
 # For changing/displaying the current monitor backlight settings in Wayland.
 # Takes current brightness setting and brings it up/down by 1/20.
 #
-# Usage: backlight.sh [up|down|current]
+# Usage: backlight.sh <up|down|current>
 ##
 dir=/sys/class/backlight/intel_backlight/
 min_brightness=25
