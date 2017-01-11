@@ -25,7 +25,7 @@ fi
 
 if [ -e $sway_source ]; then
 	echo Copying $sway_source to $sway_dest
-	mv $sway_dest $sway_dest.old_
+	mv $sway_dest $sway_dest.old
 	cp $sway_source $sway_dest
 else
 	echo !! Error copying $sway_source to $sway_dest !!
