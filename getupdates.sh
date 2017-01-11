@@ -17,7 +17,7 @@ xtouchpad_dest=~/.dotfiles/arch/70-synaptics.conf
 
 if [ -e $i3_source ]; then
 	echo Copying $i3_source to $i3_dest
-	mv $i3_dest $i3_dest.old_
+	mv $i3_dest $i3_dest.old
 	cp $i3_source $i3_dest
 else
 	echo !! Error copying $i3_source to $i3_dest !!
