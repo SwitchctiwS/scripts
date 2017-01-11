@@ -12,8 +12,8 @@ bashp_dest=~/.dotfiles/arch/.bash_profile
 xres_source=~/.Xresources
 xres_dest=~/.dotfiles/arch/.Xresources
 
-touchpad_source=/etc/X11/xorg.conf.d/70-synaptics.conf
-touchpad_dest=~/.dotfiles/arch/70-synaptics.conf
+xtouchpad_source=/etc/X11/xorg.conf.d/70-synaptics.conf
+xtouchpad_dest=~/.dotfiles/arch/70-synaptics.conf
 
 if [ -e $i3_source ]; then
 	echo Copying $i3_source to $i3_dest
@@ -43,11 +43,11 @@ else
 	echo !! Error copying $xres_source to $xres_dest !!
 fi
 
-if [ -e $touchpad_source ]; then
-	echo Copying $touchpad_source to $touchpad_dest
-	cp $touchpad_source $touchpad_dest
+if [ -e $xtouchpad_source ]; then
+	echo Copying $xtouchpad_source to $xtouchpad_dest
+	cp $xtouchpad_source $xtouchpad_dest
 else
-	echo !! Error copying $touchpad_source to $touchpad_dest !!
+	echo !! Error copying $xtouchpad_source to $xtouchpad_dest !!
 fi
 
 exit 0
