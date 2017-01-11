@@ -38,7 +38,7 @@ dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst)
 i=0;
 
 # Exits if srcs and dsts don't match up
-if [ ${#srcs[@]} -ne ${#dsts[@]} ]; then
+if (( ${#srcs[@]} != ${#dsts[@]} )); then
 	echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
 	printf "Source and destination directories are out-of-sync\n"
 	exit 1
@@ -47,44 +47,54 @@ else
 fi
 
 # Copies and backs up config files in srcs/dsts
-while [ $i -lt $length ]; do
+while (( i < length )); do
+	printf "Files: "
+	printf "\tsrc ${srcs[$i]}\n"
+	printf "\tdst ${dsts[$i]}\n"
 	if [ -e ${srcs[$i]} ]; then
 		if [ -e ${dsts[$i]} ]; then
-			# Makes *.old backup
-			printf "Creating ${dsts[$i]}.old ..."
-			if [ -e ${dsts[$i]}.old ]; then
-				rm ${dsts[$i]}.old
+			# Checks if src and dst are the same
+			# If true, doesn't copy
+			cmp --silent ${srcs[$i]} ${dsts[$i]}
+			if (( $? == 0 )); then
+				echo -en '\E[33m'"\033[1m!! Warning !! \033[0m"
+				printf "Not copying: src file and dst file have identical contents\n"
+				printf "\n"
+				let i++
+				continue
 			fi
 
+			# Makes *.old backup if none
+			# Replaces if there is one
+			printf "Creating dst.old ..."
 			mv ${dsts[$i]} ${dsts[$i]}.old
-			if ! [ -e ${dsts[$i]}.old ]; then
+			if (( $? == 1 )) || ! [ -e ${dsts[$i]}.old ]; then
 				printf "\n"
 				echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
-				printf "Could not create ${dsts[$i]}.old\n"
+				printf "Could not create dst.old\n"
 				exit 1
 			fi
 			echo -e '\E[32m'"\033[1mDone\033[0m"
 		fi
-		
-		# Copies config from src->dst
-		printf "Copying ${srcs[$i]} to ${dsts[$i]} ..."
+
+		# Copies src->dst
+		printf "Copying src to dst ..."
 		cp ${srcs[$i]} ${dsts[$i]}
-		if ! [ -e ${dsts[$i]} ]; then
+		if (( $? == 1 )) || ! [ -e ${dsts[$i]} ]; then
 			printf "\n"
 			echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
-			printf "Could not copy ${srcs[$i]}\n"
+			printf "Could not copy src\n"
 			exit 1
 		fi
-		echo -en '\E[32m'"\033[1mDone\033[0m"
-		printf "\n"
+		echo -e '\E[32m'"\033[1mDone\033[0m"
 	else
 		# Will NOT exit if config file isn't found
 		# This is so it will work on different systems
 		# e.g. I may not have Sway on one system, but I
 		# have i3. I don't want the program to keep 
-		# exiting just because I don't have i3
+		# exiting just because I don't have Sway
 		echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
-		printf "Could not find ${srcs[$i]}\n"
+		printf "Could not find src\n"
 	fi
 	
 	printf "\n"
