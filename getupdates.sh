@@ -17,6 +17,7 @@ xtouchpad_dest=~/.dotfiles/arch/70-synaptics.conf
 
 if [ -e $i3_source ]; then
 	echo Copying $i3_source to $i3_dest
+	mv $i3_dest $i3_dest.old_
 	cp $i3_source $i3_dest
 else
 	echo !! Error copying $i3_source to $i3_dest !!
@@ -24,6 +25,7 @@ fi
 
 if [ -e $sway_source ]; then
 	echo Copying $sway_source to $sway_dest
+	mv $sway_dest $sway_dest.old_
 	cp $sway_source $sway_dest
 else
 	echo !! Error copying $sway_source to $sway_dest !!
@@ -31,6 +33,7 @@ fi
 
 if [ -e $bashp_source ]; then
 	echo Copying $bashp_source to $bashp_dest
+	mv $bashp_dest $bashp_dest.old
 	cp $bashp_source $bashp_dest
 else
 	echo !! Error copying $bashp_source to $bashp_dest !!
@@ -38,6 +41,7 @@ fi
 
 if [ -e $xres_source ]; then
 	echo Copying $xres_source to $xres_dest
+	mv $xres_dest $xres_dest.old
 	cp $xres_source $xres_dest
 else
 	echo !! Error copying $xres_source to $xres_dest !!
@@ -45,6 +49,7 @@ fi
 
 if [ -e $xtouchpad_source ]; then
 	echo Copying $xtouchpad_source to $xtouchpad_dest
+	mv $xtouchpad_dest $xtouchpad_dest.old
 	cp $xtouchpad_source $xtouchpad_dest
 else
 	echo !! Error copying $xtouchpad_source to $xtouchpad_dest !!
