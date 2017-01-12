@@ -1,4 +1,5 @@
 #!/bin/bash
+# TODO: Update dirs, not just files
 
 ###########################
 ### Config File Updater ###
@@ -79,7 +80,7 @@ while (( i < length )); do
 
 		# Copies src->dst
 		printf "Copying src to dst ..."
-		cp ${srcs[$i]} ${dsts[$i]}
+		cp -r ${srcs[$i]} ${dsts[$i]}
 		if (( $? == 1 )) || ! [ -e ${dsts[$i]} ]; then
 			printf "\n"
 			echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
