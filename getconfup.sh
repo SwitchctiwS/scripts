@@ -1,5 +1,7 @@
 #!/bin/bash
-# TODO: Update dirs, not just files
+# TODO:	Update dirs, not just files
+#	Have option to restore files
+#	Split dirs and filenames
 
 ###########################
 ### Config File Updater ###
@@ -14,34 +16,48 @@
 # Config files' sources and destinations
 # Add files to this
 #
-i3_src=~/.config/i3/config
-i3_dst=~/.dotfiles/arch/i3/config
+i3_src=~/.config/i3/
+i3_dst=~/.dotfiles/arch/i3/
+i3_fil=config
 
-sway_src=~/.config/sway/config
-sway_dst=~/.dotfiles/arch/sway/config
+sway_src=~/.config/sway/
+sway_dst=~/.dotfiles/arch/sway/
+sway_fil=config
 
-bashp_src=~/.bash_profile
-bashp_dst=~/.dotfiles/arch/.bash_profile
+bashp_src=~/
+bashp_dst=~/.dotfiles/arch/
+bashp_fil=.bash_profile
 
-xres_src=~/.Xresources
-xres_dst=~/.dotfiles/arch/.Xresources
+xres_src=~/
+xres_dst=~/.dotfiles/arch/
+xres_fil=.Xresources
 
-xtouchpad_src=/etc/X11/xorg.conf.d/70-synaptics.conf
-xtouchpad_dst=~/.dotfiles/arch/70-synaptics.conf
+xtouchpad_src=/etc/X11/xorg.conf.d/
+xtouchpad_dst=~/.dotfiles/arch/
+xtouchpad_fil=50-synaptics.conf
+
+i3status_src=~/.config/i3status/
+i3status_dst=~/.dotfiles/arch/i3status/
+i3status_fil=config
+
+pro_src=~/
+pro_dst=~/.dotfiles/arch/
+pro_fil=.profile
 
 #
 # Arrays of all src and dst
 # Add files to this
 #
-srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src)
-dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst)
+srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src)
+dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst)
+fils=($i3_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil)
 
 i=0;
 
-# Exits if srcs and dsts don't match up
-if (( ${#srcs[@]} != ${#dsts[@]} )); then
+# Exits if srcs, dsts, fils don't match up
+if (( ${#srcs[@]} != ${#dsts[@]} )) || (( ${#srcs[@]} != ${#fils[@]} )) || (( ${#dsts[@]} != ${#fils[@]} )); then
 	echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
-	printf "Source and destination directories are out-of-sync\n"
+	printf "Source, destination, or file directories are out-of-sync\n"
 	exit 1
 else
 	let length=${#srcs[@]}
@@ -52,11 +68,25 @@ while (( i < length )); do
 	printf "Files: "
 	printf "\tsrc ${srcs[$i]}\n"
 	printf "\tdst ${dsts[$i]}\n"
-	if [ -e ${srcs[$i]} ]; then
-		if [ -e ${dsts[$i]} ]; then
+	printf "\tfil ${fils[$i]}\n"
+
+	if [ -e ${srcs[$i]}${fils[$i]} ]; then
+		# If dst dir doesn't exist, creates it
+		if ! [ -e ${dsts[$i]} ]; then
+			printf "Creating dst directory ..."
+			mkdir -p ${dsts[$i]}
+			if (($? == 0 )) && [ -e ${dsts[$i]} ]; then
+				echo -e '\E[32m'"\033[1mDone\033[0m"
+			else		
+				echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
+				printf "Count not create dst directory\n"
+				exit 1
+			fi
+		fi
+		if [ -e ${dsts[$i]}${fils[$i]} ]; then
 			# Checks if src and dst are the same
 			# If true, doesn't copy
-			cmp --silent ${srcs[$i]} ${dsts[$i]}
+			cmp --silent ${srcs[$i]}${fils[$i]} ${dsts[$i]}${fils[$i]}
 			if (( $? == 0 )); then
 				echo -en '\E[33m'"\033[1m!! Warning !! \033[0m"
 				printf "Not copying: src file and dst file have identical contents\n"
@@ -68,8 +98,8 @@ while (( i < length )); do
 			# Makes *.old backup if none
 			# Replaces if there is one
 			printf "Creating dst.old ..."
-			mv ${dsts[$i]} ${dsts[$i]}.old
-			if (( $? == 1 )) || ! [ -e ${dsts[$i]}.old ]; then
+			mv ${dsts[$i]}${fils[$i]} ${dsts[$i]}${fils[$i]}.old
+			if (( $? == 1 )) || ! [ -e ${dsts[$i]}${fils[$i]}.old ]; then
 				printf "\n"
 				echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
 				printf "Could not create dst.old\n"
@@ -80,8 +110,8 @@ while (( i < length )); do
 
 		# Copies src->dst
 		printf "Copying src to dst ..."
-		cp -r ${srcs[$i]} ${dsts[$i]}
-		if (( $? == 1 )) || ! [ -e ${dsts[$i]} ]; then
+		cp -r ${srcs[$i]}${fils[$i]} ${dsts[$i]}${fils[$i]}
+		if (( $? == 1 )) || ! [ -e ${dsts[$i]}${fils[$i]} ]; then
 			printf "\n"
 			echo -en '\E[31m'"\033[1m!! Error !! \033[0m"
 			printf "Could not copy src\n"
