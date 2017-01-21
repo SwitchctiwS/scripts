@@ -1,10 +1,10 @@
 #!/bin/bash
 
-###            ###
-#                #
+##################
+# ============== #
 # Volume Control #
-#                #
-###            ###
+# ============== #
+##################
 
 # Raises or lowers volume with pactl, but also clamps it to an upper/lower limit
 
@@ -15,48 +15,48 @@
 
 # Edit:
 # File location
-conf_dir=~/.config/
-conf_fil=volume.conf
+CONF_DIR=~/.config/
+CONF_FIL=volume.conf
 
 # Claping values
-max_vol=100
-min_vol=0
+MAX_VOL=100
+MIN_VOL=0
 
-startup_vol=25 # Volume computer starts up at
-step=5 # Volume step % (e.g. +5%)
-sink_num=1 # Volume sink to up/down
+STARTUP_VOL=25 # Volume computer starts up at
+STEP=5 # Volume STEP % (e.g. +5%)
+SINK='alsa_output.pci-0000_00_1b.0.analog-stereo' # Volume SINK to up/down
 
 # Creates file if none
-if ! [ -e $conf_dir$conf_fil ]; then
-	mkdir -p $conf_dir
-	touch $conf_dir$conf_fil
-	chmod 666 $conf_dir$conf_fil
-	echo 25 > $conf_dir$conf_fil
+if ! [ -e ${CONF_DIR}${CONF_FIL} ]; then
+	mkdir -p ${CONF_DIR}
+	touch ${CONF_DIR}${CONF_FIL}
+	chmod 666 ${CONF_DIR}${CONF_FIL}
+	echo 25 > ${CONF_DIR}${CONF_FIL}
 fi
 
 # Raises/lowers volume and clamps it to max/min
 # Volume is saved to config file
-cur_vol=$(<$conf_dir$conf_fil)
-if [ $1 = 'up' ]; then
-	let cur_vol+=$step
-	if (( cur_vol > max_vol )); then
-		let cur_vol=$max_vol
+CUR_VOL=$(<${CONF_DIR}${CONF_FIL})
+if [ "$1" = 'up' ]; then
+	let CUR_VOL+=${STEP}
+	if (( CUR_VOL > MAX_VOL )); then
+		let CUR_VOL=${MAX_VOL}
 	fi
-	pactl set-sink-volume $sink_num $cur_vol%
-elif [ $1 = 'down' ]; then
-	let cur_vol-=$step
-	if (( cur_vol < min_vol )); then
-		let cur_vol=$min_vol
+	pactl set-sink-volume ${SINK} ${CUR_VOL}%
+elif [ "$1" = 'down' ]; then
+	let CUR_VOL-=${STEP}
+	if (( CUR_VOL < MIN_VOL )); then
+		let CUR_VOL=${MIN_VOL}
 	fi
-	pactl set-sink-volume $sink_num $cur_vol%
-elif [ $1 = 'startup' ]; then
-	let cur_vol=$startup_vol
-	pactl set-sink-volume $sink_num $cur_vol%
+	pactl set-sink-volume ${SINK} ${CUR_VOL}%
+elif [ "$1" = 'startup' ]; then
+	let CUR_VOL=${STARTUP_VOL}
+	pactl set-sink-volume ${SINK} ${CUR_VOL}%
 else
 	exit 1
 fi
 
-echo $cur_vol > $conf_dir$conf_fil
+echo ${CUR_VOL} > ${CONF_DIR}${CONF_FIL}
 
 exit 0
 

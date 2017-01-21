@@ -1,6 +1,7 @@
 #!/bin/bash
 # TODO:	Update dirs, not just files
 #	Have option to restore files
+#	Read from config file
 
 ###########################
 ### Config File Updater ###
