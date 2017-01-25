@@ -9,12 +9,18 @@
 # Raises or lowers volume with pactl, but also clamps it to an upper/lower limit
 
 # Useage:
-# 	volume.sh <up|down|startup>
+# 	volume.sh <default|headphones> <up|down>
 
 # Config file stored in ~/.config/volume.conf
 config_dir=~/.config/sound/
-config_file="volume.conf"
-config="${config_dir}""${config_file}"
+config_file='volume.conf'
+config="${config_dir}${config_file}"
+
+# Sink is chosen from config file
+vol_sink=""
+
+# Volume is saved to respective config file
+cur_vol=""
 
 # Creates file if none
 function startup {
@@ -31,42 +37,39 @@ function startup {
 	echo '#headphones_sink=""' >> "$config"
 }
 
-# Raises/lowers volume and clamps it to max/min
-# Volume is saved to respective config file
-
-vol_sink=""
-cur_vol=""
+function create_conf {
+	touch "${config_dir}${1}.conf"
+	chmod 666 "${config_dir}${1}.conf"
+	echo '25' > "${config_dir}${1}.conf"
+}
 
 function choose_sink {
-	if [ "$1" == 'default' ]; then
-		let vol_sink="$default_sink"
-		let cur_vol="$default_vol"
-	elif [ "$1" == 'headphones' ]; then
-		let vol_sink="$headphones_sink"
-		let cur_vol="$headphones_vol"
+	if [[ "$1" == 'default' ]]; then
+		vol_sink="$default_sink"
+	elif [[ "$1" == 'headphones' ]]; then
+		vol_sink="$headphones_sink"
 	else
 		exit 1
 	fi
 }
 
+# Raises/lowers volume and clamps it to max/min
 function change_volume {
-	if [ "$1" = 'up' ]; then
+	if [[ "$1" == 'up' ]]; then
 		let cur_vol+="$step"
-		if (( cur_vol > max_vol )); then
+		if (( cur_vol > max )); then
 			let cur_vol="$max"
 		fi
-		pactl set-sink-volume "$vol_sink" "$cur_vol"%
-	elif [ "$1" = 'down' ]; then
+	elif [[ "$1" == 'down' ]]; then
 		let cur_vol-="$step"
-		if (( cur_vol < min_vol )); then
-			let cur_vol="$min_vol"
+		if (( cur_vol < min )); then
+			let cur_vol="$min"
 		fi
-		pactl set-sink-volume "$vol_sink" "$cur_vol"%
 	else
 		exit 1
 	fi
-	
-	echo "$cur_vol" > '"$config_dir""$1".conf'
+
+	pactl set-sink-volume "$vol_sink" "$cur_vol"%
 }
 
 # main:
@@ -75,10 +78,20 @@ if ! [ -e "$config" ]; then
 fi
 source $config
 
-if [ "$1" == 'default' ]; then
-	vol_sink default
-elif [ "$1" == 'headphones' ]; then
-	vol_sink headphones
+if ! [ -e "${config_dir}${1}.conf" ]; then
+	create_conf "$1"
 fi
+cur_vol="$(<${conf_dir}${1}.conf)"
+
+choose_sink "$1"
+change_volume "$2"
+
+echo "$cur_vol" > "${config_dir}${1}.conf"
 
 exit 0
+
+# TODO
+#	make just up/down affect everything
+#	make it not automatically create a .conf with a random name
+#		names should be predefined
+# END TODO
