@@ -1,7 +1,9 @@
 #!/bin/bash
-# TODO:	Update dirs, not just files
+# TODO
+#	Update dirs, not just files
 #	Have option to restore files
 #	Read from config file
+# END TODO
 
 ###########################
 ### Config File Updater ###
@@ -47,13 +49,17 @@ pro_fil=.profile
 fstab_src=/etc/
 fstab_dst=~/.dotfiles/
 fstab_fil=fstab
+
+vscode_src=~/.config/Code/User/
+vscode_dst=~/.dotfiles/vscode/
+vscode_fil=settings.json
 #
 # Arrays of all src and dst
 # Add files to this
 #
-srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src $fstab_src)
-dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst $fstab_dst)
-fils=($i3_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil $fstab_fil)
+srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src $fstab_src $vscode_src)
+dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst $fstab_dst $vscode_dst)
+fils=($i3_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil $fstab_fil $vscode_fil)
 
 i=0;
 

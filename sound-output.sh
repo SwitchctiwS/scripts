@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#TODO: figure out how to connect headphones
-
 ################
 # Sound Output #
 ################
@@ -16,14 +14,44 @@
 # xrandr will "refresh" udev and make it realize it's disconnected
 xrandr > /dev/null
 
-HDMI_STATUS=$(</sys/class/drm/*HDMI*/status)
-if [ "$1" = 'hdmi' ] && [ "${HDMI_STATUS}" = 'connected' ]; then
-	pactl move-sink-input 0 alsa_output.pci-0000_00_03.0.hdmi-stereo
-	pactl set-sink-volume alsa_output.pci-0000_00_03.0.hdmi-stereo 100%
-elif [ "$1" = 'laptop' ]; then
-	pactl move-sink-input 0 alsa_output.pci-0000_00_1b.0.analog-stereo
-#elif [ "$1" = 'headphones' ]; then
-	#figure this out 
+# Config file:
+config_dir=~/.config/sound/
+config_file="sound-output.conf"
+config="${config_dir}""${config_file}"
+
+# HDMI (dis)connected
+hdmi_status=$(</sys/class/drm/*HDMI*/status)
+
+function move_stream {
+	pactl list short sink-inputs | while read stream; do
+		stream_id=$(echo $stream | cut '-d ' -f1)
+		pactl move-sink-input "$stream_id" "$1"
+	done
+}
+
+function startup {
+	mkdir -p "$config_dir"
+	touch "$config"
+	chmod 666 $config
+
+	echo 'laptop="0"' >> $config
+	echo '#hdmi=' >> $config
+	echo '#headphones=' >> $config
+}
+
+# main:
+if ! [ -e "$config" ]; then
+	startup
+fi
+source "$config"
+
+if [ "$1" = 'hdmi' ] && [ "$hdmi_status" = 'connected' ]; then
+	move_stream $hdmi
+	pactl set-sink-volume $hdmi 100%
+elif [ "$1" = 'computer' ]; then
+	move_stream $computer
+elif [ "$1" = 'headphones' ]; then
+	move_stream $headphones	
 else
 	exit 1
 fi
