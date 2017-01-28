@@ -17,14 +17,14 @@ xrandr > /dev/null
 # Config file:
 config_dir=~/.config/sound/
 config_file='sound-output.conf'
-config="${config_dir}""${config_file}"
+config="${config_dir}${config_file}"
 
 # HDMI (dis)connected
 hdmi_status="$(</sys/class/drm/*HDMI*/status)"
 
 function move_stream {
 	pactl list short sink-inputs | while read stream; do
-		stream_id=$(echo $stream | cut '-d ' -f1)
+		stream_id=$(echo $stream | cut -f 1)
 		pactl move-sink-input "$stream_id" "$1"
 	done
 }
@@ -34,7 +34,7 @@ function startup {
 	touch "$config"
 	chmod 666 $config
 
-	echo 'laptop="0"' >> $config
+	echo 'computer="0"' >> $config
 	echo '#hdmi=""' >> $config
 	echo '#headphones=""' >> $config
 }

@@ -9,7 +9,7 @@
 # Raises or lowers volume with pactl, but also clamps it to an upper/lower limit
 
 # Useage:
-# 	volume.sh <default|headphones> <up|down>
+# 	volume.sh <computer|headphones> <up|down>
 
 # Config file stored in ~/.config/volume.conf
 config_dir=~/.config/sound/
@@ -21,6 +21,7 @@ vol_sink=""
 
 # Volume is saved to respective config file
 cur_vol=""
+cur_vol_file='current-volume'
 
 # Creates file if none
 function startup {
@@ -33,19 +34,20 @@ function startup {
 	echo 'step="5"' >> "$config"
 	echo '' >> "$config"
 	echo '# sinks' >> "$config"
-	echo 'default_sink="0"' >> "$config"
+	echo 'computer_sink="0"' >> "$config"
 	echo '#headphones_sink=""' >> "$config"
 }
 
 function create_conf {
-	touch "${config_dir}${1}.conf"
-	chmod 666 "${config_dir}${1}.conf"
-	echo '25' > "${config_dir}${1}.conf"
+	touch "${config_dir}${cur_vol_file}.conf"
+	chmod 666 "${config_dir}${cur_vol_file}.conf"
+
+	echo '25' > "${config_dir}${cur_vol_file}.conf"
 }
 
 function choose_sink {
-	if [[ "$1" == 'default' ]]; then
-		vol_sink="$default_sink"
+	if [[ "$1" == 'computer' ]]; then
+		vol_sink="$computer_sink"
 	elif [[ "$1" == 'headphones' ]]; then
 		vol_sink="$headphones_sink"
 	else
@@ -76,17 +78,21 @@ function change_volume {
 if ! [ -e "$config" ]; then
 	startup
 fi
-source $config
+source "$config"
 
-if ! [ -e "${config_dir}${1}.conf" ]; then
-	create_conf "$1"
+if ! [ -e "${config_dir}${cur_vol_file}" ]; then
+	create_conf
 fi
-cur_vol="$(<${conf_dir}${1}.conf)"
 
-choose_sink "$1"
-change_volume "$2"
+cur_vol="$(<${config_dir}${cur_vol_file})"
 
-echo "$cur_vol" > "${config_dir}${1}.conf"
+# do this programmatically
+#choose_sink "$1" 
+choose_sink computer
+change_volume "$1"
+
+
+echo "$cur_vol" > "${config_dir}${cur_vol_file}"
 
 exit 0
 
