@@ -6,20 +6,17 @@
 # ============== #
 ##################
 
-# Raises or lowers volume with pactl, but also clamps it to an upper/lower limit
+# Raises or lowers volume of default sink with pactl, but also clamps it to an upper/lower limit
 
 # Useage:
-# 	volume.sh <computer|headphones> <up|down>
+# 	volume.sh <up|down>
 
 # Config file stored in ~/.config/volume.conf
 config_dir=~/.config/sound/
 config_file='volume.conf'
 config="${config_dir}${config_file}"
 
-# Sink is chosen from config file
-vol_sink=""
-
-# Volume is saved to respective config file
+# Volume is saved to config file
 cur_vol=""
 cur_vol_file='current-volume'
 
@@ -32,10 +29,8 @@ function startup {
 	echo 'max="100"' >> "$config"
 	echo 'min="0"' >> "$config"
 	echo 'step="5"' >> "$config"
+	echo 'init_sink_vol="50"' >> "$config"
 	echo '' >> "$config"
-	echo '# sinks' >> "$config"
-	echo 'computer_sink="0"' >> "$config"
-	echo '#headphones_sink=""' >> "$config"
 }
 
 function create_conf {
@@ -43,16 +38,6 @@ function create_conf {
 	chmod 666 "${config_dir}${cur_vol_file}.conf"
 
 	echo '25' > "${config_dir}${cur_vol_file}.conf"
-}
-
-function choose_sink {
-	if [[ "$1" == 'computer' ]]; then
-		vol_sink="$computer_sink"
-	elif [[ "$1" == 'headphones' ]]; then
-		vol_sink="$headphones_sink"
-	else
-		exit 1
-	fi
 }
 
 # Raises/lowers volume and clamps it to max/min
@@ -67,11 +52,13 @@ function change_volume {
 		if (( cur_vol < min )); then
 			let cur_vol="$min"
 		fi
+	elif [[ "$1" == "change-sink" ]]; then
+		let cur_vol="$init_sink_vol"
 	else
 		exit 1
 	fi
 
-	pactl set-sink-volume "$vol_sink" "$cur_vol"%
+	pactl set-sink-volume @DEFAULT_SINK@ "$cur_vol"%
 }
 
 # main:
@@ -86,18 +73,9 @@ fi
 
 cur_vol="$(<${config_dir}${cur_vol_file})"
 
-# do this programmatically
-#choose_sink "$1" 
-choose_sink computer
 change_volume "$1"
-
 
 echo "$cur_vol" > "${config_dir}${cur_vol_file}"
 
 exit 0
 
-# TODO
-#	make just up/down affect everything
-#	make it not automatically create a .conf with a random name
-#		names should be predefined
-# END TODO

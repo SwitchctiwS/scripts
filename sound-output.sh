@@ -42,10 +42,15 @@ function startup {
 function change_output {
 	if [[ "$1" == 'hdmi' ]] && [ "$hdmi_status" = 'connected' ]; then
 		move_stream $hdmi
+		pactl set-default-sink $hdmi
 		pactl set-sink-volume $hdmi 100%
 	elif [[ "$1" == 'computer' ]]; then
+		pactl set-default-sink $computer
+		volume.sh change-sink
 		move_stream $computer
 	elif [[ "$1" == 'headphones' ]]; then
+		pactl set-default-sink $headphones
+		volume.sh change-sink
 		move_stream $headphones	
 	else
 		exit 1

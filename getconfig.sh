@@ -53,13 +53,17 @@ fstab_fil=fstab
 vscode_src=~/.config/Code/User/
 vscode_dst=~/.dotfiles/vscode/
 vscode_fil=settings.json
+
+dconf_src=~/.config/dconf/
+dconf_dst=~/.dotfiles/
+dconf_fil=user
 #
 # Arrays of all src and dst
 # Add files to this
 #
-srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src $fstab_src $vscode_src)
-dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst $fstab_dst $vscode_dst)
-fils=($i3_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil $fstab_fil $vscode_fil)
+srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src $fstab_src $vscode_src $dconf_src)
+dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst $fstab_dst $vscode_dst $dconf_dst)
+fils=($i3_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil $fstab_fil $vscode_fil $dconf_fil)
 
 i=0;
 
