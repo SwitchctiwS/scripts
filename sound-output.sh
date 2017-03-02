@@ -7,7 +7,7 @@
 # Changes sound output from laptop, HDMI, headphones and vice versa
 
 # Useage:
-#	sound-output.sh <laptop|hdmi|headphones>
+#	sound-output.sh <laptop|hdmi|headphones|bluetooth>
 
 # BUG:
 # udev detects an HDMI plug in, but it doesn't detect when it's unplugged!
@@ -37,6 +37,8 @@ function startup {
 	echo 'computer="0"' >> $config
 	echo '#hdmi=""' >> $config
 	echo '#headphones=""' >> $config
+	echo '#bluetooth=""' >> $config
+	echo '' >> $config
 }
 
 function change_output {
@@ -52,6 +54,10 @@ function change_output {
 		pactl set-default-sink $headphones
 		volume.sh change-sink
 		move_stream $headphones	
+	elif [[ "$1" == 'bluetooth' ]]; then
+		pactl set-default-sink $bluetooth
+		volume.sh change-sink
+		move_stream $bluetooth
 	else
 		exit 1
 	fi
