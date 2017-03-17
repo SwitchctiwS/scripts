@@ -1,9 +1,9 @@
 #!/bin/bash
-# TODO
+# <TODO>
 #	Update dirs, not just files
 #	Have option to restore files
 #	Read from config file
-# END TODO
+# </TODO>
 
 ###########################
 ### Config File Updater ###
