@@ -22,6 +22,14 @@ i3_src=~/.config/i3/
 i3_dst=~/.dotfiles/arch/i3/
 i3_fil=config
 
+i3ergo_src=~/.config/i3/
+i3ergo_dst=~/.dotfiles/arch/i3/
+i3ergo_fil=config.ergodox
+
+i3lap_src=~/.config/i3/
+i3lap_dst=~/.dotfiles/arch/i3/
+i3lap_fil=config.laptop
+
 sway_src=~/.config/sway/
 sway_dst=~/.dotfiles/arch/sway/
 sway_fil=config
@@ -57,13 +65,14 @@ vscode_fil=settings.json
 dconf_src=~/.config/dconf/
 dconf_dst=~/.dotfiles/
 dconf_fil=user
+
 #
 # Arrays of all src and dst
 # Add files to this
 #
-srcs=($i3_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src $fstab_src $vscode_src $dconf_src)
-dsts=($i3_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst $fstab_dst $vscode_dst $dconf_dst)
-fils=($i3_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil $fstab_fil $vscode_fil $dconf_fil)
+srcs=($i3_src $i3ergo_src $i3lap_src $sway_src $bashp_src $xres_src $xtouchpad_src $i3status_src $pro_src $fstab_src $vscode_src $dconf_src)
+dsts=($i3_dst $i3ergo_dst $i3lap_dst $sway_dst $bashp_dst $xres_dst $xtouchpad_dst $i3status_dst $pro_dst $fstab_dst $vscode_dst $dconf_dst)
+fils=($i3_fil $i3ergo_fil $i3lap_fil $sway_fil $bashp_fil $xres_fil $xtouchpad_fil $i3status_fil $pro_fil $fstab_fil $vscode_fil $dconf_fil)
 
 i=0;
 
