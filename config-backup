@@ -1,0 +1,104 @@
+#!/bin/bash
+
+##############################
+# Config File Updater/Backup #
+##############################
+
+### Author: Jared Thibault
+### Date: 07 Jul 2018
+
+### Description:
+# This program automatically copies and backs up the config files listed
+# at $HOME/.config/config-backup.
+
+### Usage:
+# Add config files to cb.config with the directory and file name in 
+# the format: 
+#     dir:name:filepath
+# (Delimited by ':')
+# Nothing else should be in this folder, and all filepaths should be explicit
+# (i.e. not $HOME/foo/bar, but /home/woo/foo/bar)
+
+# <TODO>
+#	Update dirs, not just files
+#	Have option to restore files
+# </TODO>
+
+### Defines
+cb_config_dir="$HOME/.config/config-backup"
+cb_config_file="cb.config"
+
+### Runs on a fresh install (ie no config dir) and sets up the system
+function new_install {
+    mkdir -p "${cb_config_dir}"
+    touch "${cb_config_dir}/$cb_config_file"
+    chmod 666 "${cb_config_dir}/$cb_config_file"
+}
+
+### Iterates through given line and processes it
+function process_file {
+    # Delimited by a ':'
+    while IFS=':' read -ra config; do
+        # Shorthand to make things easier 
+        copied_file="$USER/${config[0]}/${config[1]}" 
+        copied_file_dir="$USER/${config[0]}"
+        original_file="${config[2]}"
+
+        # Checks file to make sure it exists
+        if [ -f "${original_file}" ]; then
+            mkdir -p "${copied_file_dir}"
+
+            # Only copies the file if it is different than the original file 
+            # This ensures that the config and config.old files are always
+            # different
+            if [ -f "${copied_file}" ]; then
+                diff "${original_file}" "${copied_file}" >> /dev/null
+                if [ $? -ne 0 ]; then
+                    mv "${copied_file}" "${copied_file}.old"  
+                    cp "${original_file}" "${copied_file}"
+                    echo Copied ${original_file}
+                else
+                    echo 'Did not copy (already at newest change): '${original_file}
+                fi
+            else
+                cp "${original_file}" "${copied_file}"
+                echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+            fi
+
+        else
+            # Throws error if the file doesn't exist
+            echo -e '\E[31m'"\033[1m!! Error !! \033[0m" "${original_file}" 'does not exist!'
+            return 1
+        fi
+    done <<< $1
+    return 0
+}
+
+### Main
+function main {
+    # Checks if the config file exists
+    # If not, it sets up the system
+    if ! [ -e "${cb_config_dir}/$cb_config_file" ]; then
+        echo 'Creating config folder at '"${cb_config_dir}"
+        new_install 
+    fi
+
+    # Make working directory the config dir
+    cd "${cb_config_dir}"
+
+    # Read config file line by line
+    # Doesn't currently suport use of $HOME and similar envars
+    let errors=0
+    while IFS=$'\n' read -r line; do
+        process_file $line
+        if [ $? -ne 0 ]; then
+            ((errors++))
+        fi
+    done < "${cb_config_file}"
+    echo ''
+    echo 'Finished running with '$errors' errors'
+
+    exit 0
+}
+
+main
