@@ -9,12 +9,12 @@
 
 ### Description:
 # This program automatically copies and backs up or restores the config files 
-# listed at $HOME/.config/conbar/conbar.list/$USER.
+# listed at $HOME/.config/conbar/$USER that are specified by conbar.list
 
 ### Usage:
 # conbar <backup|restore>
 #
-# Add config files to cb.config with the directory and file name in 
+# Add config files to conbar.list with the directory and file name in 
 # the format: 
 #     dir:name:filepath
 # (Delimited by ':')
