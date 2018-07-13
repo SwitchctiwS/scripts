@@ -1,0 +1,193 @@
+#!/bin/bash
+
+##############################################
+# conbar: CONfig (file) BAckup (and) Restore #
+##############################################
+
+### Author: Jared Thibault
+### Date: 07 Jul 2018
+
+### Description:
+# This program automatically copies and backs up or restores the config files 
+# listed at $HOME/.config/conbar/$USER that are specified by conbar.list
+
+### Usage:
+# conbar <backup|restore>
+#
+# Add config files to conbar.list with the directory and file name in 
+# the format: 
+#     dir:name:filepath
+# (Delimited by ':')
+# Nothing else should be in this folder, and all filepaths should be explicit
+# (i.e. not $HOME/foo/bar, but /home/woo/foo/bar)
+
+# <TODO>
+#	Update dirs, not just files
+#       Add update command
+#       Create help text
+# </TODO>
+
+### Defines
+cb_config_dir="$HOME/.config/conbar"
+cb_config_file="conbar.list"
+
+#### Displays when user types in anything other than 'backup' or 'restore'
+function help_text {
+    echo 'Help text'
+    exit 1
+}
+
+### Runs on a fresh install (ie no config dir) and sets up the system
+function new_install {
+    mkdir -p "${cb_config_dir}"
+    touch "${cb_config_dir}/$cb_config_file"
+    chmod 666 "${cb_config_dir}/$cb_config_file"
+}
+
+### Iterates through given line and processes it
+function backup {
+    # Delimited by a ':'
+    while IFS=':' read -ra config; do
+        # Shorthand to make things easier 
+        backup_file="$USER/${config[0]}/${config[1]}" 
+        backup_file_dir="$USER/${config[0]}"
+        original_file="${config[2]}"
+
+        # Checks file to make sure it exists
+        if [ -f "${original_file}" ]; then
+            mkdir -p "${backup_file_dir}"
+
+            # Only copies the file if it is different than the original file 
+            # This ensures that the config and config.old files are always
+            # different
+            # If the backup file exist
+            if [ -f "${backup_file}" ]; then
+                diff "${original_file}" "${backup_file}" >> /dev/null
+
+                # And it's different than original, copy file and make backup
+                if [ $? -ne 0 ]; then
+                    mv "${backup_file}" "${backup_file}.old"  
+                    echo 'Created '${backup_file}'.old'
+                    cp "${original_file}" "${backup_file}"
+                    echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+
+                # Doesn't copy if no difference
+                else
+                    echo 'Did not copy (already at newest change): '${original_file}
+                fi
+
+            # Copies if it doesn't exist
+            else
+                cp "${original_file}" "${backup_file}"
+                echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+            fi
+
+        # Throws error if the file doesn't exist
+        else
+            echo -e '\E[31m'"\033[1m!! Error !! \033[0m" "${original_file}" 'does not exist!'
+            return 1
+        fi
+    done <<< $1
+    return 0
+}
+
+### Iterates through given line and processes it
+function restore {
+    # Delimited by a ':'
+    while IFS=':' read -ra config; do
+        # Shorthand to make things easier 
+        backup_file="$USER/${config[0]}/${config[1]}" 
+        backup_file_dir="$USER/${config[0]}"
+        original_file="${config[2]}"
+        original_dir=$(echo $original_file | cut --complement -c$(expr ${#original_file} - ${#config[1]})-${#original_file})
+
+        # Checks restore file to make sure it exists
+        if [ -f "${backup_file}" ]; then
+
+            # If the original file exists and is different
+            if [ -f "${original_file}" ]; then
+                diff "${backup_file}" "${original_file}" >> /dev/null
+
+                # Then make a backup of the original file
+                if [ $? -ne 0 ]; then
+                    mv "${original_file}" "${original_file}.old"
+                    echo 'Created '${original_file}'.old'
+                    cp "${backup_file}" "${original_file}"
+                    echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+                # If it's the same then do not copy
+                else
+                    echo 'Did not copy (already at newest change): '${original_file}
+                fi
+
+            # If it doesn't exist, then
+            # Create directory and paste in file
+            else 
+                mkdir -p "${original_dir}"
+                echo 'Created '${original_dir}
+                cp "${backup_file}" "${original_file}"
+                echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+            fi
+
+        # Throws error if the file doesn't exist
+        else
+            echo -e '\E[31m'"\033[1m!! Error !! \033[0m" "${backup_file}" 'does not exist!'
+            return 1
+        fi
+    done <<< $1
+    return 0
+}
+
+function update {
+    echo nothing
+}
+
+### Main
+# Checks if the config file exists. If not, it sets up the system
+if ! [ -e "${cb_config_dir}/$cb_config_file" ]; then
+    echo 'Creating config folder at '"${cb_config_dir}"
+    new_install 
+fi
+
+# Make working directory the config dir
+cd "${cb_config_dir}"
+
+# Error If there are too many commands
+if [ $# -gt 1 ]; then
+    help_text
+fi
+
+# Goes to backup
+let errors=0
+if [ $1 == "backup" ]; then
+    while IFS=$'\n' read -r line; do
+        backup $line
+        if [ $? -ne 0 ]; then
+            ((errors++))
+        fi
+        echo ''
+    done < "${cb_config_file}"
+    
+# Goes to restore 
+elif [ $1 == "restore" ]; then
+    while IFS=$'\n' read -r line; do
+        restore $line
+        if [ $? -ne 0 ]; then
+            ((errors++))
+        fi
+        echo ''
+    done < "${cb_config_file}"
+
+# Goes to update
+elif [ $1 == "update" ]; then
+    echo 'Does not currently work'
+    
+# If there is an incorrect command
+else
+    help_text
+fi
+
+# Read config file line by line
+# Doesn't currently suport use of $HOME and other envars
+echo 'Finished running with '$errors' errors'
+
+exit 0

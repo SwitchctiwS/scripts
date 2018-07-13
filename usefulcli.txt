@@ -1,0 +1,6 @@
+# to start
+eval `ssh-agent` # make sure to use BACKTICKS (`)
+ssh-add
+
+# to kill:
+kill $SSH_AGENT_PID
