@@ -1,1 +1,0 @@
-Create Arch/Antergos installation script

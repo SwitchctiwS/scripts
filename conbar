@@ -22,9 +22,11 @@
 # (i.e. not $HOME/foo/bar, but /home/woo/foo/bar)
 
 # <TODO>
-#	Update dirs, not just files
-#       Add update command
-#       Create help text
+#   Update dirs, not just files
+#   Add update command
+#   Create help text
+#   port everything to sh
+#   remove redundant file name (can be taken from file path)
 # </TODO>
 
 ### Defines
