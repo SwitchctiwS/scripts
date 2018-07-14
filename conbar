@@ -23,10 +23,12 @@
 
 # <TODO>
 #   Update dirs, not just files
-#   Add update command
+#   Add update command (automatically add files to conbar.list)
 #   Create help text
 #   port everything to sh
 #   remove redundant file name (can be taken from file path)
+#   add error checking
+#   allow envars like $HOME
 # </TODO>
 
 ### Defines
@@ -44,6 +46,7 @@ function new_install {
     mkdir -p "${cb_config_dir}"
     touch "${cb_config_dir}/$cb_config_file"
     chmod 666 "${cb_config_dir}/$cb_config_file"
+    exit 0
 }
 
 ### Iterates through given line and processes it
@@ -154,7 +157,7 @@ fi
 cd "${cb_config_dir}"
 
 # Error If there are too many commands
-if [ $# -gt 1 ]; then
+if ! [ $# -eq 1 ]; then
     help_text
 fi
 
