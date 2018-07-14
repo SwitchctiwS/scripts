@@ -8,34 +8,43 @@
 ### Date: 07 Jul 2018
 
 ### Description:
-# This program automatically copies and backs up or restores the config files 
-# listed at $HOME/.config/conbar/$USER that are specified by conbar.list
-
-### Usage:
-# conbar <backup|restore>
-#
-# Add config files to conbar.list with the directory and file name in 
-# the format: 
-#     dir:name:filepath
-# (Delimited by ':')
-# Nothing else should be in this folder, and all filepaths should be explicit
-# (i.e. not $HOME/foo/bar, but /home/woo/foo/bar)
+# This program automatically backs up or restores specified files
 
 # <TODO>
-#   Update dirs, not just files
-#   Add update command (automatically add files to conbar.list)
-#   Create help text
-#   port everything to sh (probably not possible, so nah)
 #   add error checking
+#   Update dirs, not just files
+#   port everything to sh (probably not possible, so nah)
 # </TODO>
 
 ### Defines
 cb_config_dir="$HOME/.config/conbar"
 cb_config_file="conbar.list"
 
-#### Displays when user types in anything other than 'backup' or 'restore'
+#### Displays when user anything other than commands
 function help_text {
-    echo 'Help text'
+    echo 'CONBAR: CONfig (File) Backup And Restore'
+    echo ''
+    echo 'Description:'
+    echo '    This program automatically backs up/restores the config files listed in "conbar.list".'
+    echo '    "conbar.list" is saved at "$HOME/.config/conbar/conbar.list".'
+    echo '    The backed up files are saved at "$HOME/.config/conbar/$USER/dir" where "dir" is specified in "conbar.list".'
+    echo ''
+    echo 'Usage:'
+    echo '    conbar <backup|restore>'
+    echo ''
+    echo '    backup:  backs up files listed in conbar.list and creates "file".old if there is already a backed up file, and the original file and the backed up file differ'
+    echo '    restore: restores files listed in conbar.list and creates "file".old if there is already an original file, and the backed up file and the original file differ'
+    echo ''
+    echo 'conbar.list:'
+    echo '    Add config files to conbar.list with the backup directory and original file name in the format dir:filename (delimited by a ":")'
+    echo ''
+    echo '    e.g.:'
+    echo '        original filename: /home/user/foo/bar'
+    echo '        backup directory:  dir'
+    echo '        in conbar.list:    dir:$HOME/foo/bar'
+    echo ''
+    echo '        "foo" will be saved as /home/user/.config/conbar/user/dir/bar'
+
     exit 1
 }
 
@@ -53,6 +62,7 @@ function backup {
     # Delimited by a ':'
     while IFS=':' read -ra config; do
         # Shorthand to make things easier 
+        # eval makes envars work
         original_file="$(eval echo "${config[1]}")"
         backup_file_dir="${cb_config_dir}/$USER/${config[0]}"
         backup_file="${cb_config_dir}/$USER/${config[0]}/$(basename "${config[1]}")" 
@@ -63,7 +73,7 @@ function backup {
             # Only copies the file if it is different than the original file 
             # This ensures that the config and config.old files are always
             # different
-            # If the backup file exist
+            # If the backup file exists...
             if [ -f "${backup_file}" ]; then
                 diff "${original_file}" "${backup_file}" >> /dev/null
 
@@ -102,6 +112,7 @@ function restore {
     # Delimited by a ':'
     while IFS=':' read -ra config; do
         # Shorthand to make things easier 
+        # eval makes $HOME work
         original_file_dir="$(dirname $(eval echo "${config[1]}"))"
         original_file="$(eval echo "${config[1]}")"
         backup_file_dir="${cb_config_dir}/$USER/${config[0]}"
@@ -125,8 +136,7 @@ function restore {
                     echo "Did not copy (already at newest change): ${original_file}"
                 fi
 
-            # If it doesn't exist, then
-            # Create directory and paste in file
+            # If it doesn't exist, then create directory and paste in file
             else 
                 mkdir -p "${original_dir}"
                 echo "Created ${original_dir}"
@@ -143,12 +153,8 @@ function restore {
     return 0
 }
 
-function update {
-    echo nothing
-}
-
 ### Main
-# Checks if the config file exists. If not, it sets up the system
+# Checks if the config file exists. If not, it creates it then exits
 if ! [ -e "${cb_config_dir}/$cb_config_file" ]; then
     new_install 
 fi
@@ -179,17 +185,12 @@ elif [ $1 == "restore" ]; then
         echo ''
     done < "${cb_config_dir}/${cb_config_file}"
 
-# Goes to update
-elif [ $1 == "update" ]; then
-    echo 'Does not currently work'
-    
 # If there is an incorrect command
 else
     help_text
 fi
 
 # Read config file line by line
-# Doesn't currently suport use of $HOME and other envars
 echo 'Finished running with '$errors' errors'
 
 exit 0
