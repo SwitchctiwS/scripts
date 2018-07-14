@@ -25,10 +25,8 @@
 #   Update dirs, not just files
 #   Add update command (automatically add files to conbar.list)
 #   Create help text
-#   port everything to sh
-#   remove redundant file name (can be taken from file path)
+#   port everything to sh (probably not possible, so nah)
 #   add error checking
-#   allow envars like $HOME
 # </TODO>
 
 ### Defines
@@ -43,9 +41,10 @@ function help_text {
 
 ### Runs on a fresh install (ie no config dir) and sets up the system
 function new_install {
+    echo 'Creating config folder at '"${cb_config_dir}"
     mkdir -p "${cb_config_dir}"
     touch "${cb_config_dir}/$cb_config_file"
-    chmod 666 "${cb_config_dir}/$cb_config_file"
+    chmod 644 "${cb_config_dir}/$cb_config_file"
     exit 0
 }
 
@@ -54,13 +53,12 @@ function backup {
     # Delimited by a ':'
     while IFS=':' read -ra config; do
         # Shorthand to make things easier 
-        backup_file="$USER/${config[0]}/${config[1]}" 
-        backup_file_dir="$USER/${config[0]}"
-        original_file="${config[2]}"
-
+        original_file="$(eval echo "${config[1]}")"
+        backup_file_dir="${cb_config_dir}/$USER/${config[0]}"
+        backup_file="${cb_config_dir}/$USER/${config[0]}/$(basename "${config[1]}")" 
+        
         # Checks file to make sure it exists
         if [ -f "${original_file}" ]; then
-            mkdir -p "${backup_file_dir}"
 
             # Only copies the file if it is different than the original file 
             # This ensures that the config and config.old files are always
@@ -74,25 +72,28 @@ function backup {
                     mv "${backup_file}" "${backup_file}.old"  
                     echo 'Created '${backup_file}'.old'
                     cp "${original_file}" "${backup_file}"
-                    echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+                    echo -e '\E[32m'"\033[1mCopied\033[0m ${original_file}"
 
                 # Doesn't copy if no difference
                 else
-                    echo 'Did not copy (already at newest change): '${original_file}
+                    echo "Did not copy (already at newest change): ${original_file}"
                 fi
 
-            # Copies if it doesn't exist
+            # Createds directory and copies if it doesn't exist
             else
+                mkdir -p "${backup_file_dir}"
+                echo "Created ${backup_file_dir}"
                 cp "${original_file}" "${backup_file}"
-                echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+                echo -e '\E[32m'"\033[1mCopied\033[0m ${original_file}"
             fi
 
         # Throws error if the file doesn't exist
         else
-            echo -e '\E[31m'"\033[1m!! Error !! \033[0m" "${original_file}" 'does not exist!'
+            echo -e '\E[31m'"\033[1m!! Error !! \033[0m ${original_file} does
+            not exist!"
             return 1
         fi
-    done <<< $1
+    done <<< "$1"
     return 0
 }
 
@@ -101,10 +102,10 @@ function restore {
     # Delimited by a ':'
     while IFS=':' read -ra config; do
         # Shorthand to make things easier 
-        backup_file="$USER/${config[0]}/${config[1]}" 
-        backup_file_dir="$USER/${config[0]}"
-        original_file="${config[2]}"
-        original_dir=$(echo $original_file | cut --complement -c$(expr ${#original_file} - ${#config[1]})-${#original_file})
+        original_file_dir="$(dirname $(eval echo "${config[1]}"))"
+        original_file="$(eval echo "${config[1]}")"
+        backup_file_dir="${cb_config_dir}/$USER/${config[0]}"
+        backup_file="${cb_config_dir}/$USER/${config[0]}/$(basename "${config[1]}")" 
 
         # Checks restore file to make sure it exists
         if [ -f "${backup_file}" ]; then
@@ -116,26 +117,26 @@ function restore {
                 # Then make a backup of the original file
                 if [ $? -ne 0 ]; then
                     mv "${original_file}" "${original_file}.old"
-                    echo 'Created '${original_file}'.old'
+                    echo "Created ${original_file}.old"
                     cp "${backup_file}" "${original_file}"
-                    echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+                    echo -e '\E[32m'"\033[1mCopied\033[0m ${original_file}"
                 # If it's the same then do not copy
                 else
-                    echo 'Did not copy (already at newest change): '${original_file}
+                    echo "Did not copy (already at newest change): ${original_file}"
                 fi
 
             # If it doesn't exist, then
             # Create directory and paste in file
             else 
                 mkdir -p "${original_dir}"
-                echo 'Created '${original_dir}
+                echo "Created ${original_dir}"
                 cp "${backup_file}" "${original_file}"
-                echo -e '\E[32m'"\033[1mCopied\033[0m" ${original_file}
+                echo -e '\E[32m'"\033[1mCopied\033[0m ${original_file}"
             fi
 
         # Throws error if the file doesn't exist
         else
-            echo -e '\E[31m'"\033[1m!! Error !! \033[0m" "${backup_file}" 'does not exist!'
+            echo -e '\E[31m'"\033[1m!! Error !! \033[0m ${backup_file} does not exist!"
             return 1
         fi
     done <<< $1
@@ -149,12 +150,8 @@ function update {
 ### Main
 # Checks if the config file exists. If not, it sets up the system
 if ! [ -e "${cb_config_dir}/$cb_config_file" ]; then
-    echo 'Creating config folder at '"${cb_config_dir}"
     new_install 
 fi
-
-# Make working directory the config dir
-cd "${cb_config_dir}"
 
 # Error If there are too many commands
 if ! [ $# -eq 1 ]; then
@@ -170,7 +167,7 @@ if [ $1 == "backup" ]; then
             ((errors++))
         fi
         echo ''
-    done < "${cb_config_file}"
+    done < "${cb_config_dir}/${cb_config_file}"
     
 # Goes to restore 
 elif [ $1 == "restore" ]; then
@@ -180,7 +177,7 @@ elif [ $1 == "restore" ]; then
             ((errors++))
         fi
         echo ''
-    done < "${cb_config_file}"
+    done < "${cb_config_dir}/${cb_config_file}"
 
 # Goes to update
 elif [ $1 == "update" ]; then
