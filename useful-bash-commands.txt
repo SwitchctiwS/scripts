@@ -1,0 +1,19 @@
+To make a live USB:
+	cd path/to/iso/dir
+	lsblk					# list all disks and partitions
+	sudo umount /dev/sdX# 	# unmount USB
+	sudo dd if=name_of_image.iso of=/dev/sdX bs=4M status=progress && sync
+
+For partition editing:
+	fdisk
+	cfdisk (basically a more user-friendly fdisk)
+	parted
+
+For showing is a command is an alias:
+	type COMMAND
+
+Opening files using default app (in GNOME):
+	gnome-open FILENAME
+
+Showing filesystem usage:
+	df
