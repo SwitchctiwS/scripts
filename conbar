@@ -13,7 +13,6 @@
 # <TODO>
 #   add error checking
 #   Update dirs, not just files
-#   port everything to sh (probably not possible, so nah)
 # </TODO>
 
 ### Defines
@@ -89,7 +88,7 @@ function backup {
                     echo "Did not copy (already at newest change): ${original_file}"
                 fi
 
-            # Createds directory and copies if it doesn't exist
+            # Creates directory and copies if it doesn't exist
             else
                 mkdir -p "${backup_file_dir}"
                 echo "Created ${backup_file_dir}"
@@ -99,8 +98,7 @@ function backup {
 
         # Throws error if the file doesn't exist
         else
-            echo -e '\E[31m'"\033[1m!! Error !! \033[0m ${original_file} does
-            not exist!"
+            echo -e '\E[31m'"\033[1m!! Error !! \033[0m ${original_file} does not exist!"
             return 1
         fi
     done <<< "$1"

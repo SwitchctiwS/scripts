@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # launch ranger in current dir on urxvt
 sakura -x ranger
