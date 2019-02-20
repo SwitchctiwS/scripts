@@ -20,10 +20,13 @@ Description:
     Each entry is a text document with the name yyyy-mm-dd.txt (e.g. 1996-11-29.txt)
 
 <TODO>
+    - Have things display in proper order!
     - set up proper execptions
     - expecially when looking at the config_file configparser
 </TODO>
 """
+
+
 
 import os
 import sys
@@ -34,7 +37,7 @@ import configparser
 
 
 # Defines
-VERSION = "1.0"
+VERSION = "1.2"
 CONFIG_FILE_TEXT = "# IMPORTANT NOTES\n" \
                    "# NOTE 1: This config file is supposed to be located at $HOME/.config/journalizer/config.ini\n" \
                    "# NOTE 2: ~ expansion does not work!\n" \
@@ -70,7 +73,10 @@ def main():
     file_path = os.path.join(directory, filename)
 
     # Each function is mutually exclusive
-    if args.list_journals is True:
+    if args.print is True:
+        print_entry(file_path)
+
+    elif args.list_journals is True:
         # Lists journals (directories)
         list_paths(directory, "dirs")
 
@@ -94,6 +100,19 @@ def main():
     sys.exit(0)
 
 
+def print_entry(file_path):
+    try:
+       with open(file_path, "r") as f:
+           for line in f:
+               print(line, end='')
+    except FileNotFoundError as error:
+        print(error)
+        sys.exit("File does not exist!")
+    except PermissionError as error:
+        print(error)
+        sys.exit("Can't access file!")
+
+
 def list_paths(directory, path_type):
     # listdir() returns list of relative paths,
     # NOT full pathnames
@@ -102,6 +121,9 @@ def list_paths(directory, path_type):
     except OSError as error:
         print(error)
         sys.exit("Could not acccess directory!")
+
+    # Need to sort() because listdir() is in arbitrary order
+    paths.sort(key=str.lower)
 
     # Iterates through all paths and finds dirs/files
     path_count = 0
@@ -197,6 +219,10 @@ def setup_argparse():
                         action="store_true",
                         help="lists journals in directory (default is config file dir)")
     
+    parser.add_argument("-p", "--print",
+                        action="store_true",
+                        help="displays entry's contents on stdout")
+
     parser.add_argument("-v", "--version",
                         action="version",
                         version=sys.argv[0] + " " + VERSION)
@@ -204,13 +230,13 @@ def setup_argparse():
     return parser.parse_args()
 
 
-def setup_filename(entry):
+def setup_filename(name):
     # Use today's date if not specified
-    if entry is None:
+    if name is None:
         filename = str(date.today()) + ".txt"
     else:
         # No ".txt"!
-        filename = entry
+        filename = name 
     
     return filename 
 
@@ -265,10 +291,10 @@ def setup_directory(user_dir, user_journal, config_jdir):
     return directory 
 
 
-def open_jentry(jentry, text_editor):
+def open_jentry(file_path, text_editor):
     # Open entry with text editor
     try:
-        subprocess.run((text_editor, jentry))
+        subprocess.run((text_editor, file_path))
     except FileNotFoundError as error:
         print(error)
         sys.exit("Text editor does not exist!")
