@@ -136,8 +136,8 @@ function restore {
 
             # If it doesn't exist, then create directory and paste in file
             else 
-                mkdir -p "${original_dir}"
-                echo "Created ${original_dir}"
+                mkdir -p "${original_file_dir}"
+                echo "Created ${original_file_dir}"
                 cp "${backup_file}" "${original_file}"
                 echo -e '\E[32m'"\033[1mCopied\033[0m ${original_file}"
             fi

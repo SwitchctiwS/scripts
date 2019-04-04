@@ -20,12 +20,10 @@ Description:
     Each entry is a text document with the name yyyy-mm-dd.txt (e.g. 1996-11-29.txt)
 
 <TODO>
-    - Have things display in proper order!
     - set up proper execptions
     - expecially when looking at the config_file configparser
 </TODO>
 """
-
 
 
 import os
@@ -37,7 +35,7 @@ import configparser
 
 
 # Defines
-VERSION = "1.2"
+VERSION = "1.3"
 CONFIG_FILE_TEXT = "# IMPORTANT NOTES\n" \
                    "# NOTE 1: This config file is supposed to be located at $HOME/.config/journalizer/config.ini\n" \
                    "# NOTE 2: ~ expansion does not work!\n" \
@@ -89,6 +87,10 @@ def main():
         for d in args.create_journal:
             create_directory(os.path.join(directory, d))
 
+    elif args.remove is True:
+        # Lowest precedence because this could mess things up
+        remove_entry(file_path)
+
     else:
         # Creates entry
         if os.path.isfile(file_path) is False:
@@ -98,6 +100,55 @@ def main():
         open_jentry(file_path, text_editor)
 
     sys.exit(0)
+
+
+def remove_entry(file_path):
+    try:
+        response = query_yn("Are you sure you want to delete {0}?".format(file_path), "no")
+    except ValueError as error:
+        print(error)
+        sys.exit("internal error!")
+    
+    if response is False:
+        print("Did not delete {0}".format(file_path))
+        return
+    else:
+        try:
+            os.remove(file_path) 
+        except OSError as error:
+            print(error)
+            sys.exit("Can't remove file!")
+
+    print("Removed {0}".format(file_path)) 
+
+
+def query_yn(question, default_answer=None):
+    valid_responses = {"yes" : True, "y": True,
+             "no": False, "n": False}
+    if default_answer is None:
+        prompt = " [y/n]"
+    elif default_answer == "yes":
+        prompt = " [Y/n]"
+    elif default_answer == "no":
+        prompt = " [y/N]"
+    else:
+        raise ValueError("default_answer: {0} is invalid".format(default_answer))
+
+    is_exit = False
+    while is_exit is False:
+        print(question + prompt)
+        user_answer = input().lower()
+
+        if default_answer is not None and user_answer == "":
+            is_exit = True
+            response = valid_responses[default_answer]
+        elif user_answer in valid_responses:
+            is_exit = True
+            response = valid_responses[user_answer]
+        else:
+            print("Please respond with \'yes\' or \'no\'")
+
+    return response
 
 
 def print_entry(file_path):
@@ -222,6 +273,10 @@ def setup_argparse():
     parser.add_argument("-p", "--print",
                         action="store_true",
                         help="displays entry's contents on stdout")
+
+    parser.add_argument("-R", "--remove",
+                        action="store_true",
+                        help="removes selected entry")
 
     parser.add_argument("-v", "--version",
                         action="version",
