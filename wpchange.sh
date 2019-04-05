@@ -6,6 +6,9 @@
 # Author: Jared Thibault
 # Date: 2019-04-04
 
+# NOTE: The folder that the wallpapers are stored in should JUST HAVE PICTURES!
+# anything else will crash nitrogen
+
 # config files/dirs 
 config="$HOME/.config/wpchange/config"
 config_d="$(dirname "${config}")"
@@ -45,6 +48,14 @@ fi
 # stores all filenames in array
 cd "${wp_dir}"
 wps=(*)
+
+# exits if not enough wallpapers
+if [[ "${#wps[@]}" -le 1 ]]; then
+    echo 'not enough wallpapers to change to!'
+    echo 'need at least 2'
+    exit 1
+fi
+
 wps_last_i=$((( ${#wps[@]} - 1 )))
 
 # finds index of current wallpaper
