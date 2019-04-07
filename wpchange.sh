@@ -6,6 +6,8 @@
 # Author: Jared Thibault
 # Date: 2019-04-04
 
+# <TODO>  have list of randomzied wallpapers instead of just randomly picking one </TODO>
+
 # config files/dirs 
 config="$HOME/.config/wpchange/config"
 config_d="$(dirname "${config}")"
